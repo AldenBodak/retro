@@ -1,7 +1,8 @@
-FROM node:latest AS build
+FROM node:24.22.1-alpine AS build
 WORKDIR /srv
 COPY . .
-RUN npm install
+ENV CYPRESS_INSTALL_BINARY=0
+RUN npm ci
 RUN npm run build
 
 FROM nginx:alpine

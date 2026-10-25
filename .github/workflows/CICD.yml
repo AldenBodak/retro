@@ -4,24 +4,27 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   ci:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
-      - uses: actions/checkout@v1
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v7
+      - name: Use Node.js from .nvmrc
+        uses: actions/setup-node@v7
         with:
-          node-version: 16.x
+          node-version-file: .nvmrc
+          cache: npm
       - name: Install
-        run: npm install
+        run: npm ci
+        env:
+          CYPRESS_INSTALL_BINARY: 0
       - name: Lint
         run: npm run lint
       - name: Audit
-        run: npm audit --production
+        run: npm audit --omit=dev
       - name: Build
         run: npm run build
       - name: Archive Production Artifact
@@ -44,11 +47,11 @@ jobs:
             "viewportWidth=1280,viewportHeight=800",
           ]
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 16.x
-      - uses: cypress-io/github-action@v5
+          node-version-file: .nvmrc
+      - uses: cypress-io/github-action@v7
         with:
           build: npm run build -- --mode=development
           start: npm run preview
@@ -56,7 +59,7 @@ jobs:
           config: ${{ matrix.viewport }},baseUrl=http://localhost:4173
       - name: Dump docker logs
         if: always()
-        uses: jwalton/gh-docker-logs@v1
+        uses: jwalton/gh-docker-logs@v2
       - name: Save cypress test videos as artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -70,9 +73,9 @@ jobs:
     needs:
       - ci
       - cypress
-    if: "!contains(github.event.head_commit.message, '[skip ci]') && github.ref == 'refs/heads/master'"
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && github.ref == 'refs/heads/main'"
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v7
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:

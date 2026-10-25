@@ -35,5 +35,8 @@
     "dragula": "^3.7.3",
     "firebase": "^11",
     "jose": "^6"
+  },
+  "overrides": {
+    "@grpc/grpc-js@<1.13.6": "^1.13.6"
   }
 }
